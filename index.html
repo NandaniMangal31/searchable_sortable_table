@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>React Table Task</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <div id="root"></div>
+<!-- these 2 links contain main libraries of the react -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script> <!--main features likecomponents,state-->
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>  <!--helps to react to interact with html DOM-->
+
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>  <!-- this link makes browser to understand the jsx-->
+
+    <script type="text/babel"> //it converts the jsx or react code to understaning language of broweser
+
+      const StudentData = [
+        { id: 1, name: "Rohit", age: 30, marks: 98 },
+        { id: 2, name: "Rahul", age: 20, marks: 95 },
+        { id: 3, name: "Rinna", age: 18, marks: 78 },
+        { id: 4, name: "Raunka", age: 19, marks: 75 },
+        { id: 5, name: "Mohit", age: 25, marks: 69 },
+        { id: 6, name: "Parul", age: 24, marks: 70 },
+        { id: 7, name: "Kuldeep", age: 21, marks: 60 },
+        { id: 8, name: "Pari", age: 18, marks: 44 },
+        { id: 9, name: "Sejal", age: 26, marks: 55 },
+        { id: 10, name: "Sunil", age: 28, marks: 56 },
+        { id: 11, name: "Muskan", age: 29, marks: 60 },
+        { id: 12, name: "Anjani", age: 17, marks: 74 },
+        { id: 13, name: "Mittaly", age: 19, marks: 85 },
+        { id: 14, name: "Yashi", age: 20, marks: 100 },
+        { id: 15, name: "Rajesh", age: 24, marks: 89 },
+        { id: 16, name: "Naresh", age: 25, marks: 82 },
+        { id: 17, name: "Sonali", age: 21, marks: 98 },
+      ];
+
+      function App() {
+        const [data, setData] = React.useState(StudentData);  //used to set the data
+        const [sortField, setSortField] = React.useState(null); //used to set the field means in which column you want to do sorting "ex: "name
+        const [sortOrder, setSortOrder] = React.useState("asc"); // used to sort the column in asc or desc
+        const [search, setSearch] = React.useState(""); //used to global search
+        const [filter, setFilter] = React.useState({ id: "", name: "", marks: "" });//used to search the content in faster way
+        const [page, setPage] = React.useState(1); // set the default page 1 like ap kis page pe hoo abhi
+        const rowsPerPage = 4; // how many rows presnt in one page
+
+        //arrow function for sorting:=>
+        const sortData = (field) => {    // here field is whatyou choose like name age etc;
+          const order = sortField === field && sortOrder === "asc" ? "desc" : "asc"; // if our field is name and it is in asc then no change were there but you choose again the name then it changes to des
+          const sorted = [...data].sort((a, b) => {  //the sorting concept began here data is duplicate copy of  original array
+            if (a[field] < b[field]) return order === "asc" ? -1 : 1;  // a comes before b here a and b used to comapre to elements in array
+            if (a[field] > b[field]) return order === "asc" ? 1 : -1;  // b comes before a
+            return 0;
+          });
+          setSortOrder(order);
+          setSortField(field);
+          setData(sorted);
+        };
+        //Global search and column search match
+        const filteredData = data.filter((item) => {  //here we apply filter on rows to globaly search we get whole array
+          const matchSearch = Object.values(item)  //here we have one row like id 1 row
+            .join(" ") //this is used to convert the array into string used to search globally
+            .toLowerCase()   //convert whole the string in lowercase.
+            .includes(search.toLowerCase());    //it checks the item which we search is present in string or not like we search 1 so it includes in string
+
+          const matchFilter =  //here we search columnwise
+            item.name.toLowerCase().includes(filter.name.toLowerCase()) &&   //it do same thing as the row doo
+            String(item.marks).toLowerCase().includes(filter.marks.toLowerCase()) &&
+            String(item.id).toLowerCase().includes(filter.id.toLowerCase());
+
+          return matchSearch && matchFilter;  //here i concate the row and column filter.
+        });
+        //now we make the concept of filters:
+        const pageData = filteredData.slice(   //this is used to filter the data and slice them into 3
+          (page - 1) * rowsPerPage,       //here the itnital value of slice is get through which we decide from where we want to slice our data
+          page * rowsPerPage       //here the last value of slice we get which show the end of the data
+        );
+        const totalPages = Math.ceil(filteredData.length / rowsPerPage);  //at the end this show how many pages we have accordng to data.
+
+        return (
+          <div>
+            <h2>Sortable & Searchable Table</h2>
+
+            <input
+              type="text"
+              placeholder="Search all"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              style={{ marginBottom: "10px", width: "300px", padding: "3px" }}
+            />
+
+            <div style={{ margin: "10px 0" }}>
+              <input
+                type="text"
+                placeholder="Search by ID"
+                value={filter.id}
+                onChange={(e) => setFilter({ ...filter, id: e.target.value })}
+              />
+              <input
+                type="text"
+                placeholder="Search by Name"
+                value={filter.name}
+                onChange={(e) => setFilter({ ...filter, name: e.target.value })}
+                style={{ marginLeft: "10px" }}
+              />
+              <input
+                type="text"
+                placeholder="Search by Marks"
+                value={filter.marks}
+                onChange={(e) => setFilter({ ...filter, marks: e.target.value })}
+                style={{ marginLeft: "10px" }}
+              />
+            </div>
+
+            <table border="1" cellPadding="10">
+              <thead>
+                <tr>
+                  <th onClick={() => sortData("id")}>ID</th>
+                  <th onClick={() => sortData("name")}>Name</th>
+                  <th onClick={() => sortData("age")}>Age</th>
+                  <th onClick={() => sortData("marks")}>Marks</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pageData.map((item) => (
+                  <tr key={item.id}>
+                    <td>{item.id}</td>
+                    <td>{item.name}</td>
+                    <td>{item.age}</td>
+                    <td>{item.marks}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <div style={{ marginTop: "10px" }}>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => ( //it makes the array according to total pages "(_,i"- this ensure that index start from 0 and i+1 ensures that index always start from 1 and map(p) makes the button for each page
+                <button
+                  key={p}  //har ek page ke ek unique key hoti hai
+                  onClick={() => setPage(p)}  //if any user press p then it call the setpage and that page become current page
+                  style={{
+                    margin: "0 5px",
+                    backgroundColor: p === page ? "#aaa" : "#eee",
+                  }}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+      }
+
+      const root = ReactDOM.createRoot(document.getElementById("root"));
+      root.render(<App />);
+
+    </script>
+  </body>
+</html>
